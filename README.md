@@ -65,207 +65,44 @@ Screenshot of output part.
 
 ## Step 4
 
-Create website files to upload.
+Code snippet of the bash file
 
-Create a new directory call **html**.
-  ```bash
-    mkdir html
-  ```
-Create a **html file** called **index.html**.
-  ```bash
-    vim html/index.html
-  ```
+```bash
+#!/bin/bash
 
-Here is the content written in index.html.
-  ```html
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>My Website</title>
-    </head>
-    <body>
-        <h1>This is [Author]'s Website on Server [one or two]</h1>
-    </body>
-    </html>
-  ```
+sudo rm /etc/motd
 
-Create a new directory call **src**, and go to the newly created directory.
-  ```bash
-    mkdir src
-    cd src
-  ```
+sudo touch /etc/motd
 
-Create new **node** project inside **src**, and installation of **fastify** will then be performed here.
-  ```bash
-    npm init
-    npm i fastify
-  ```
+sudo chmod a+rwx /etc/motd
 
-Create a **javascript** file called **index.js** in **src**.
-  ```bash
-    vim index.js
-  ```
+echo "Regular users on the system are:" > /etc/motd
 
-Here is the content written in index.js, you will add host and change port.
-  ```javascript
-    // Require the framework and instantiate it
-    const fastify = require('fastify')({ logger: true })
+grep -h [1-4][0-9][0-9][0-9] /etc/passwd | awk -F ":" '{ print $1, $3, $6 }' > /etc/motd
 
-    // Declare a route
-    fastify.get('/api', async (request, reply) => {
-    return { hello: 'Server [one or two]' }
-    })
+echo "Users currently logged in are:" >/etc/motd
 
-    // Run the server!
-    const start = async () => {
-    try {
-        await fastify.listen({ port: 5050, host: '127.0.0.1' })
-    } catch (err) {
-        fastify.log.error(err)
-        process.exit(1)
-    }
-    }
-    start()
-  ```
+who > /etc/motd
 
+echo "Data stored into /etc/motd"
+
+exit 0
+```
 
 
 ## Step 5
 
-Write the **Caddyfile** 
+The contents in service file.
 
-Codes are provided to access the file.
-  ```bash
-    sudo vim /etc/caddy/Caddyfile
-  ```
+```bash
+[Unit]
+Description=find users on the system
 
-Modify the contents in caddy file, indicates **its port** and **where html file is located**.
-  ```bash 
-    # The Caddyfile is an easy way to configure your Caddy web server.
-    #
-    # Unless the file starts with a global options block, the first
-    # uncommented line is always the address of your site.
-    #
-    # To use your own domain name (with automatic HTTPS), first make
-    # sure your domain's A/AAAA DNS records are properly pointed to
-    # this machine's public IP, then replace ":80" below with your
-    # domain name.
+[Service]
+Type=oneshot
+ExecStart=/home/vagrant/find_users
 
-    http:// {
-            # Set this path to your site's directory.
-            root * /var/www/html
-
-            reverse_proxy /api localhost:5050
-
-            # Enable the static file server.
-            file_server
-
-            # Another common task is to set up a reverse proxy:
-            # reverse_proxy localhost:8080
-
-            # Or serve a PHP site through php-fpm:
-            # php_fastcgi localhost:9000
-    }
-
-    # Refer to the Caddy docs for more information:
-    # https://caddyserver.com/docs/caddyfile
-  ```
-
-Screenshot is avaliable.
-![image_caddy_file](img/caddy_file.png)
-
-Don't forget to give permission to execute Caddyfile.
-  ```bash
-    sudo chown caddy:caddy /etc/caddy/Caddyfile
-    sudo chmod 660 /etc/caddy/Caddyfile
-  ```
-
-
-## Step 6
-
-Install **node** and **npm** with **Volta**.
-
-Codes are provided.
-  ```bash
-    curl https://get.volta.sh | bash
-    source ~/.bashrc
-    volta install node
-    which npm
-    volta install npm
-  ```
-
-
-
-## Step 7
-
-Write a **service file** to start server.
-
-Open the file to write.
-  ```bash
-  sudo vim /etc/systemd/system/hello_web.service
-  ```
-
-The contents are wriiten like this.
-  ```bash
-    [Unit]
-    Description=It is a web app
-    After=network-online.target
-    Wants=network-online.target
-
-    [Service]
-    ExecStart=[directory of node installed by Volta] [direcotry of your index.js]
-    User=nlin
-    Restart=always
-    RestartSec=15
-    TimeoutStopSec=60
-    SyslogIdentifier=hello_web
-
-    [Install]
-    WantedBy=multi-user.target
-  ```
-
-Start both **caddy and hello_web.service**.
-  ```bash
-    sudo systemctl daemon-reload
-    sudo start caddy
-    sudo start hello_web.service
-  ```
-
-
-
-## Step 8
-
-Check the functionality.
-
-Access the site inside terminal.
-  ```bash
-    curl [your host ip]
-    curl [your host ip]:[port]/api
-  ```
-
-Screenshots are provided for both **server one and two**.
-
-![image_server1_curl](img/server1_curl.png)
-
-![image_server1_curl_api](img/server1_curl_api.png)
-
-![image_server2_curl](img/server2_curl.png)
-
-![image_server2_curl_api](img/server2_curl_api.png)
-
-
-Access the webpage with browser with **ip of load balancer**.
-
-![image_browser_1](img/browser_1.png)
-
-![image_browser_api_1](img/browser_api_1.png)
-
-![image_browser_2](img/browser_2.png)
-
-![image_browser_api_2](img/browser_api_2.png)
-
-
+[Install]
+WantedBy=multi-user.target
+```
 
