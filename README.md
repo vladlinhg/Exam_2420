@@ -94,6 +94,8 @@ exit 0
 
 The contents in service file.
 
+The service file shall be located /etc/systemd/system
+
 ```bash
 [Unit]
 Description=find users on the system
@@ -106,3 +108,26 @@ ExecStart=/home/vagrant/find_users
 WantedBy=multi-user.target
 ```
 
+Screenshot of output part. 
+![image_part5](Images/part5.png)
+
+
+## Step 6
+
+The contents in timer file.
+
+The timer file shall be located /etc/systemd/system
+
+```bash
+[Unit]
+Description=start the backup
+
+
+[Timer]
+OnCalendar=Thu *-*-* 00:00:00
+Persistent=true
+
+
+[Install]
+WantedBy=timers.target
+```
